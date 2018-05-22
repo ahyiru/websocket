@@ -16,8 +16,8 @@ const app={
 	  component:Test,
 	  name:'websocket',
 	  icon:'home',
-	  noMenu:true,
-	  noFrame:false,
+	  // noMenu:true,
+	  noFrame:true,
 	}],
 };
 

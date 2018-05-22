@@ -20,6 +20,7 @@
     "babel-preset-stage-0": "^6.24.1",
     "babel-register": "^6.26.0",
     "babel-runtime": "^6.26.0",
+    "cors": "^2.8.4",
     "css-loader": "^0.28.11",
     "express": "^4.16.3",
     "file-loader": "^1.1.11",
@@ -41,6 +42,6 @@
     "react": "^16.3.2",
     "react-dom": "^16.3.2",
     "socket.io-client": "^2.1.0",
-    "yrui": "^1.7.62"
+    "yrui": "^1.7.63"
   }
 }

@@ -45,7 +45,7 @@ module.exports=function(server){
     });
     socket.on('logout',(name)=>{
       onlineUsers=rmArr(onlineUsers,name,'name');
-      console.log(`[${userInfo.ip}] 已下线！`);
+      console.log(`[${name}] 已下线！`);
       io.sockets.emit('user left',{
         username:name||userInfo.name,
         users:onlineUsers,
@@ -55,14 +55,14 @@ module.exports=function(server){
       onlineUsers=rmArr(onlineUsers,name,'name');
       console.log(`[${name}] 已被剔除！`);
       io.sockets.emit('user left',{
-        username:name||userInfo.ip,
+        username:name||userInfo.name,
         users:onlineUsers,
       });
       io.sockets.emit('break out',name);
     });
     socket.on('new message',(msg)=>{
       io.sockets.emit('new message',{
-        username:msg.name||userInfo.ip,
+        username:msg.name||userInfo.name,
         msg:msg.msg,
         img:msg.img,
       });

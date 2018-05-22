@@ -8,7 +8,7 @@ const {$storage,$notify}=tools;
 
 const displayName=$storage.get('displayName');
 
-const socket = require('socket.io-client')('http://localhost:8000');
+const socket = require('socket.io-client')('http://192.168.0.105:8000/');//本机IP地址
 
 const noty=(info,out=false)=>{
   let data={
