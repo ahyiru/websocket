@@ -1,0 +1,9 @@
+**/node_modules
+__tests__
+builder
+doc
+node
+y_dist
+coverage
+server.js
+webpack.*.js
