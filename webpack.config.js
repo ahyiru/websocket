@@ -32,6 +32,9 @@ module.exports = {
     },{
       test: /\.(ttf|eot|svg|woff|woff2|otf)/,
       loader: 'file-loader?name=fonts/[hash:8].[ext]',
+    },{
+      test: /\.(jpe?g|png|gif|psd|bmp|ico)/i,
+      loader: 'file-loader?name=img/img_[hash:8].[ext]',
     }],
   },
 

@@ -4,11 +4,13 @@ import './test.less';
 
 import {Row,Col,Button,Input,tools} from 'yrui';
 
-const {$storage,$notify}=tools;
+const {$storage,$notify,$fetch}=tools;
 
 const displayName=$storage.get('displayName');
 
 const socket = require('socket.io-client')('http://192.168.0.105:8000/');//本机IP地址
+
+const imgUrl=`http://192.168.0.105:8008`;
 
 const noty=(info,out=false)=>{
   let data={
@@ -24,6 +26,14 @@ const noty=(info,out=false)=>{
     };
   }
   $notify.start(data);
+};
+const noty1=(data)=>{
+  Notification.requestPermission().then(function(result){
+    let n=new Notification('来自yiru的通知',{
+      body:data.username+' 说:'+(data.msg||'图片'),
+      icon:require('./img/usr.jpg'),
+    }); 
+  });
 };
 
 const hasItem=(arr,name)=>{
@@ -42,14 +52,13 @@ export default class Demo10 extends React.Component {
   outName='';
   t=0;
   state={
-    join:'',
-    left:'',
     onlineUsers:[],
     username:'',
     msg:'',
     msgs:[],
     val:'',
     displayname:'',
+    imgUrl:'',
 
     outName:'',
   };
@@ -79,6 +88,7 @@ export default class Demo10 extends React.Component {
       }
     });
     socket.on('new message',(data)=>{
+      noty1(data);
       this.messages.push(data);
       this.setState({
         msgs:this.messages,
@@ -89,6 +99,7 @@ export default class Demo10 extends React.Component {
     socket.on('user left',(data)=>{
       console.log('data',data);
       noty(data.msg,true);
+      noty1(data);
       this.setState({
         onlineUsers:data.users,
       });
@@ -100,6 +111,7 @@ export default class Demo10 extends React.Component {
     socket.on('msg tips',(data)=>{
       console.log(data)
       noty(data.msg);
+      noty1(data);
     });
   };
   componentWillUnmount(){
@@ -169,11 +181,69 @@ export default class Demo10 extends React.Component {
     this.outName=v.target.value;
   };
 
+  selectImg=()=>{
+    const fl:any=this.refs.imgUp;
+    const file=fl.files[0];
+    if(file){
+      if(!/image\/\w+/.test(file.type)){
+        alert('只能发图片，滚。');
+        this.setState({
+          imgUrl:null,
+        });
+        return false;
+      }
+      if(file.size>10*1024*1024){
+        alert('文件太大，滚。');
+        this.setState({
+          imgUrl:null,
+        });
+        return false;
+      }
+      let reader=new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload=(e)=>{
+        let data:any=e.target; 
+        this.setState({
+          imgUrl:data.result,
+          imgName:file.name,
+          imgType:file.type,
+        });
+      };
+    }
+  };
+  sendImg=()=>{
+    $fetch.post('/fileup',{
+      data:JSON.stringify({
+        imgUrl:this.state.imgUrl,
+        imgName:this.state.imgName,
+      }),
+    }).then((data)=>{
+      // console.log(data);
+      socket.emit('new message',{
+        img:imgUrl+'/'+data.result,
+        name:displayName,
+      });
+      this.setState({
+        val:'',
+      });
+    }).catch((err)=>{
+      // console.log(err);
+      socket.emit('new message',{
+        img:imgUrl+'/'+err.result,
+        name:displayName,
+      });
+      this.setState({
+        val:'',
+      });
+    });
+  };
+
   render() {
-    const {onlineUsers,username,msg,msgs,val,outName}=this.state;
+    const {onlineUsers,username,msg,msgs,val,outName,imgUrl}=this.state;
     const showMsgs=(data)=>{
       return data.map((v,k)=>{
-        return <h4 key={`msg-${k}`}><b>{v.username}:</b>
+        const cls=v.username==displayName?'current':'';
+        return <h4 className={cls} key={`msg-${k}`}><b>{v.username}</b>
           {v.msg&&<span>{v.msg}</span>}
           {v.img&&<img src={v.img} />}
         </h4>;
@@ -193,6 +263,18 @@ export default class Demo10 extends React.Component {
                 </div>
               </div>
               <Input placeholder="请输入..." pright="发送" prClick={this.send} onKeyUp={this.enter} value={val} change={this.change} />
+              <div className="upload">
+                <div className="select-img">
+                  <input ref="imgUp" type="file" onChange={this.selectImg} />
+                  <Button text="发送图片" color="info" />
+                </div>
+                {
+                  imgUrl&&<div className="send-img">
+                    <img src={imgUrl} />
+                    <Button text="发送" color="success" pullRight click={this.sendImg} />
+                  </div>
+                }
+              </div>
               {msg&&<h4><b>{username}</b>:{msg}</h4>}
             </Col>
             <Col span={1} />
@@ -205,6 +287,9 @@ export default class Demo10 extends React.Component {
                 </p>
                 {
                   onlineUsers.map((v,k)=>{
+                    if(v.name==='huy'){
+                      return <p key={`online${k}`} className="green"><img src={require('./img/usr.jpg')} />{v.name}</p>;
+                    }
                     return <p key={`online${k}`} className="green">{v.name}</p>;
                   })
                 }

@@ -18,6 +18,7 @@
 			overflow:auto;
 			padding:0 8px;
 			h4{
+				overflow:hidden;
 				>span{
 					display:inline-block;
 					height:22px;
@@ -31,6 +32,19 @@
 				>img{
 					max-width:200px;
 					border-radius:3px;
+				}
+				&.current{
+					>span{
+						float:right;
+						margin-left:0;
+						margin-right:10px;
+					}
+					>b{
+						float:right;
+					}
+					>img{
+						float:right;
+					}
 				}
 			}
 		}
