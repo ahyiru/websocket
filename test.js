@@ -33,7 +33,7 @@ const noty1=(data)=>{
   Notification.requestPermission().then(function(result){
     let n=new Notification('来自yiru的通知',{
       body:data.username+' 说:'+(data.msg||'图片'),
-      icon:require('./img/usr.jpg'),
+      icon:require('./usr.jpg'),
     }); 
   });
 };
@@ -290,7 +290,7 @@ export default class Demo10 extends React.Component {
                 {
                   onlineUsers.map((v,k)=>{
                     if(v.name==='huy'){
-                      return <p key={`online${k}`} className="green"><img src={require('./img/usr.jpg')} />{v.name}</p>;
+                      return <p key={`online${k}`} className="green"><img src={require('./usr.jpg')} />{v.name}</p>;
                     }
                     return <p key={`online${k}`} className="green">{v.name}</p>;
                   })
