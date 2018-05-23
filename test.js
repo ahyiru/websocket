@@ -26,8 +26,20 @@ const noty=(info,out=false)=>{
   $notify.start(data);
 };
 
+const hasItem=(arr,name)=>{
+  let hasName=false;
+  arr.map((v,k)=>{
+    if(v['name']===name){
+      hasName=true;
+    }
+  });
+  return hasName;
+};
+
 export default class Demo10 extends React.Component {
   messages=[];
+  displayname='';
+  outName='';
   t=0;
   state={
     join:'',
@@ -43,18 +55,28 @@ export default class Demo10 extends React.Component {
   };
   
   componentDidMount(){
+    this.onEvents();
     if(displayName){
       socket.emit('new user',displayName);
-      this.onEvents();
+      socket.emit('get users');
     }
   }
   onEvents=()=>{
-    socket.on('user joined',(data)=>{
-      noty(data.username+' 已上线！');
+    socket.on('get users',(data)=>{
       this.setState({
-        join:data.username,
         onlineUsers:data.users,
       });
+    });
+    socket.on('user joined',(data)=>{
+      if(!displayName){
+        if(data.success){
+          $storage.set('displayName',data.username);
+          location.reload();
+          // noty(data.msg);
+        }else{
+          noty(data.msg,true);
+        }
+      }
     });
     socket.on('new message',(data)=>{
       this.messages.push(data);
@@ -66,9 +88,8 @@ export default class Demo10 extends React.Component {
     });
     socket.on('user left',(data)=>{
       console.log('data',data);
-      noty(data.username+' 已下线！',true);
+      noty(data.msg,true);
       this.setState({
-        left:data.username,
         onlineUsers:data.users,
       });
       if(displayName==data.username){
@@ -76,16 +97,9 @@ export default class Demo10 extends React.Component {
         location.reload();
       }
     });
-    socket.on('break out',(name)=>{
-      noty(name+' 已被管理员踢除！',true);
-      if(displayName==name){
-        $storage.rm('displayName');
-        location.reload();
-      }
-    });
-
-    socket.on('test111',(data)=>{
-      console.log(data);
+    socket.on('msg tips',(data)=>{
+      console.log(data)
+      noty(data.msg);
     });
   };
   componentWillUnmount(){
@@ -114,7 +128,7 @@ export default class Demo10 extends React.Component {
           val:'',
         });
       }else{
-        alert('请输入文本!');
+        noty('请输入文本!',true);
       }
     }
   };
@@ -128,23 +142,18 @@ export default class Demo10 extends React.Component {
         val:'',
       });
     }else{
-      alert('请输入文本!');
+      noty('请输入文本!',true);
     }
   };
   enterName=()=>{
-    const {displayname}=this.state;
-    if(displayname&&displayname!=='huy1'){
-      $storage.set('displayName',displayname);
-      location.reload();
-      // window.location.href=window.location.href.split('?')[0]+'?time='+((new Date()).getTime());
+    if(this.displayname){
+      socket.emit('new user',this.displayname);
     }else{
-      alert('昵称不合法！');
+      noty('昵称不能为空!',true);
     }
   };
   setName=(v)=>{
-    this.setState({
-      displayname:v.target.value,
-    });
+    this.displayname=v.target.value;
   };
   logout=()=>{
     socket.emit('logout',displayName);
@@ -154,17 +163,14 @@ export default class Demo10 extends React.Component {
   };
 
   breakOut=()=>{
-    const {outName}=this.state;
-    socket.emit('break out',outName);
+    socket.emit('break out',this.outName);
   };
   changeName=(v)=>{
-    this.setState({
-      outName:v.target.value,
-    });
+    this.outName=v.target.value;
   };
 
   render() {
-    const {join,left,onlineUsers,username,msg,msgs,val,displayname,outName}=this.state;
+    const {onlineUsers,username,msg,msgs,val,outName}=this.state;
     const showMsgs=(data)=>{
       return data.map((v,k)=>{
         return <h4 key={`msg-${k}`}><b>{v.username}:</b>
@@ -179,6 +185,7 @@ export default class Demo10 extends React.Component {
           displayName?
           <Row gutter={8}>
             <Col span={8}>
+            {displayName==='huy'&&<div className="mb"><Input placeholder="踢除昵称" pright="踢除" prClick={this.breakOut} value={outName} change={this.changeName} /></div>}
               <div className="msg-panel">
                 <h2>聊天窗口</h2>
                 <div ref="msg" className="msg-content">
@@ -188,10 +195,9 @@ export default class Demo10 extends React.Component {
               <Input placeholder="请输入..." pright="发送" prClick={this.send} onKeyUp={this.enter} value={val} change={this.change} />
               {msg&&<h4><b>{username}</b>:{msg}</h4>}
             </Col>
-            <Col span={2} />
-            <Col span={2}>
-              <Button text="退出" color="warning" click={this.logout} />
-              {displayName==='huy'&&<Input placeholder="踢除昵称" pright="踢除" prClick={this.breakOut} value={outName} change={this.changeName} />}
+            <Col span={1} />
+            <Col span={3}>
+              <div className="mb"><Button text="退出" color="warning" click={this.logout} /></div>
               <div className="users">
                 <h4>在线用户</h4>
                 <p>在线人数: 
@@ -208,7 +214,7 @@ export default class Demo10 extends React.Component {
           :
           <Row gutter={8}>
             <Col span={4} offset={4}>
-              <Input placeholder="输入昵称" value={displayname} change={this.setName} />
+              <Input placeholder="输入昵称" change={this.setName} />
             </Col>
             <Col span={4} offset={4}>
               <Button text="进入" color="info" block click={this.enterName} />
