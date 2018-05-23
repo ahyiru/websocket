@@ -4,13 +4,15 @@ import './test.less';
 
 import {Row,Col,Button,Input,tools} from 'yrui';
 
+import {config} from './config';
+
 const {$storage,$notify,$fetch}=tools;
 
 const displayName=$storage.get('displayName');
 
-const socket = require('socket.io-client')('http://192.168.0.105:8000/');//本机IP地址
+const socket = require('socket.io-client')(config.baseUri);//本机IP地址
 
-const imgUrl=`http://192.168.0.105:8008`;
+const imgUrl=config.imgUri;
 
 const noty=(info,out=false)=>{
   let data={
