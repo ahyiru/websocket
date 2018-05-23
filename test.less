@@ -32,6 +32,7 @@
 				>img{
 					max-width:200px;
 					border-radius:3px;
+					margin-left:10px;
 				}
 				&.current{
 					>span{
@@ -44,6 +45,8 @@
 					}
 					>img{
 						float:right;
+						margin-left:0;
+						margin-right:10px;
 					}
 				}
 			}
@@ -53,7 +56,9 @@
 		position:relative;
 		padding:15px 0;
 		.select-img{
-			position:absolute;
+			// position:absolute;
+			position:relative;
+			display:inline-block;
 			input{
 				// visibility:hidden;
 				opacity:0;
